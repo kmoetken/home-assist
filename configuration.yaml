@@ -1,0 +1,146 @@
+homeassistant:
+  name: Home
+  latitude: !secret home_lat
+  longitude: !secret home_long
+  elevation: !secret home_elev
+  unit_system: imperial
+  time_zone: America/New_York
+  temperature_unit: F
+
+# Show links to resources in log and frontend
+introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+http:
+  api_password: !secret http_password
+  base_url: 192.168.88.2:8123
+
+# Checks for available updates
+updater:
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time.
+history:
+
+# View all events in a logbook
+logbook:
+
+# Track the sun
+sun:
+
+# Weather Prediction
+sensor:
+  platform: yr
+
+# Text to speech
+tts:
+  platform: google
+
+wink:
+  access_token: !secret wink_token
+
+notify:
+  - name: aws_sns
+    platform: aws_sns
+    aws_access_key_id: !secret aws_sns_access_key_id
+    aws_secret_access_key: !secret aws_sns_access_secret
+    region_name: us-west-2
+
+group:
+  My Home:
+    - group.living_room
+    - group.master_bed
+    - group.office
+    - group.Doors
+    - group.Kitchen
+  Living Room:
+    - light.Living_Room_Lamp
+  Master Bed:
+    - light.Bedroom_Lamp
+    - light.Bedroom_TV_Lamp
+  Office:
+    - light.Office_Lamp
+  Garage:
+    - binary_sensor.sensor_motion
+    - sensor.sensor_temperature
+  Kitchen:
+    - light.Counter_Lightstrip
+    - light.Kitchen_Lightstrip
+  Doors:
+    - binary_sensor.d_bedroom_opened
+    - binary_sensor.d_bathroom_opened
+    - binary_sensor.back_door_opened
+    - binary_sensor.front_door_opened
+    - binary_sensor.garage_entry_opened
+
+automation:
+- alias: 'Sleepwalker'
+  hide_entity: True
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.d_bathroom_opened
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.d_bedroom_opened
+      to: 'on'
+  condition:
+    condition: time
+    after: '21:00:00'
+    before: '06:00:00'
+  action:
+    - service: homeassistant.turn_on
+      entity_id:
+        - light.Living_Room_Lamp
+    - service: notify.aws_sns
+      data: 
+        message: "It opened"
+        target: 
+          - arn:aws:sns:us-west-2:143242333006:SleepWalk
+
+# Example use nmap to scan for devices on the network
+# # Not that useful but maybe someday
+# #device_tracker:
+# #  platform: nmap_tracker
+# #  hosts: 192.168.88.0/24
+# #  home_interval: 10
+#
+# # MQTT configuration to talk to mosquito server for OwnTracks
+# mqtt:
+#   broker: 127.0.0.1
+#     port: 1883
+#       client_id: home-assistant-1
+#         keepalive: 60
+#           username: !secret owntracks_user
+#             password: !secret owntracks_pass
+#
+#OwnTracks for presense
+#device_tracker:
+#  platform: owntracks
+
+
+# Zones
+#zone:
+#  name: Pups_And_Gram
+#  latitude: pg_lat
+#  longitude: pg_lon
+#  # Optional radius in meters (default: 100)
+#  radius: 100
+#
+#zone 2:
+#  name: Office
+#  latitude: office_lat
+#  longitude: office_lon
+#  # Optional radius in meters (default: 100)
+#  radius: 100
+
+
